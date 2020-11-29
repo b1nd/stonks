@@ -1,4 +1,4 @@
-package ru.stonks.app
+package ru.stonks.app.component
 
 import cats.effect.{Blocker, ContextShift, Resource, Sync}
 import pureconfig.module.catseffect.loadConfigF
