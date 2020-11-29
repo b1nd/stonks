@@ -15,7 +15,7 @@ trait AppModules[F[_]] {
 }
 
 object AppModules {
-  def apply[F[_] : Sync : ContextShift : Parallel: Concurrent](
+  def apply[F[_] : Sync : ContextShift : Parallel : Concurrent](
     financeApiConfig: FinanceApiConfig,
     transactor: Transactor[F],
     client: Client[F])(implicit
@@ -26,7 +26,7 @@ object AppModules {
       financeApiBaseUrl = financeApiConfig.baseUrl,
       financeApiKey = financeApiConfig.apiKey,
       client = client,
-      xa = transactor
+      transactor = transactor
     )
 
     override lazy val financeModule: FinanceModuleImpl[F] = new FinanceModuleImpl[F](

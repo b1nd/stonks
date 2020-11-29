@@ -23,6 +23,6 @@ class AppDatabase[F[_] : Async : ContextShift](databaseConfig: DatabaseConfig) {
 object AppDatabase {
   def apply[F[_]](databaseConfig: DatabaseConfig)(implicit
     contextShift: ContextShift[F],
-    timer: Async[F]
+    async: Async[F]
   ): AppDatabase[F] = new AppDatabase(databaseConfig)
 }

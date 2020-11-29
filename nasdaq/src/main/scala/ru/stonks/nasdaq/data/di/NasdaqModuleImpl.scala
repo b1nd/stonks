@@ -15,7 +15,7 @@ class NasdaqModuleImpl[F[_]](
   financeApiBaseUrl: String,
   financeApiKey: String,
   client: Client[F],
-  xa: Transactor[F])(implicit
+  transactor: Transactor[F])(implicit
   sync: Sync[F],
   parallel: Parallel[F],
   contextShift: ContextShift[F],
