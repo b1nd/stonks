@@ -1,5 +1,8 @@
 package ru.stonks.app.config
 
 final case class Config(
-  server: ServerConfig
+  financeApi: FinanceApiConfig,
+  db: DatabaseConfig,
+  server: ServerConfig,
+  client: ClientConfig
 )

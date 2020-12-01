@@ -1,4 +1,4 @@
-package ru.stonks.app
+package ru.stonks.app.component
 
 import cats.effect.{ConcurrentEffect, ContextShift, Resource, Timer}
 import org.http4s.HttpRoutes
