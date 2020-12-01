@@ -1,19 +1,20 @@
 package ru.stonks.nasdaq.data.di
 
-import cats.{MonadError, Parallel}
 import cats.effect.{ContextShift, Sync}
+import cats.{MonadError, Parallel}
 import com.softwaremill.macwire._
 import doobie.util.transactor.Transactor
 import org.http4s.client.Client
 import ru.stonks.nasdaq.core.domain.NasdaqModule
 import ru.stonks.nasdaq.core.domain.usecase._
+import ru.stonks.nasdaq.data.client.{NasdaqApiClientCredentials, RealTimeNasdaqCompaniesClient}
 import ru.stonks.nasdaq.data.repository._
-import ru.stonks.nasdaq.domain.repository.PersistentNasdaqCompaniesRepository
+import ru.stonks.nasdaq.domain.client.NasdaqCompaniesClient
+import ru.stonks.nasdaq.domain.repository.NasdaqCompaniesRepository
 import ru.stonks.nasdaq.domain.usecase._
 
 class NasdaqModuleImpl[F[_]](
-  financeApiBaseUrl: String,
-  financeApiKey: String,
+  nasdaqApiClientCredentials: NasdaqApiClientCredentials,
   client: Client[F],
   transactor: Transactor[F])(implicit
   sync: Sync[F],
@@ -22,26 +23,15 @@ class NasdaqModuleImpl[F[_]](
   monadError: MonadError[F, Throwable]
 ) extends NasdaqModule[F] {
 
-  private object RefreshPersistentNasdaqCompaniesRepositoryFactory {
-    def create(
-      persistentNasdaqCompaniesRepository: PersistentNasdaqCompaniesRepository[F]
-    ): RefreshPersistentNasdaqCompaniesRepository[F] = {
-      val realTimeNasdaqCompaniesRepository = new RealTimeNasdaqCompaniesRepository[F](
-        financeApiBaseUrl, financeApiKey, client
-      )
-      new RefreshPersistentNasdaqCompaniesRepositoryImpl[F](
-        realTimeNasdaqCompaniesRepository,
-        persistentNasdaqCompaniesRepository
-      )
-    }
-  }
+  lazy val nasdaqCompaniesClient: NasdaqCompaniesClient[F]
+  = wire[RealTimeNasdaqCompaniesClient[F]]
 
-  lazy val persistentNasdaqCompaniesRepository: PersistentNasdaqCompaniesRepository[F]
+  lazy val nasdaqCompaniesRepository: NasdaqCompaniesRepository[F]
   = wire[HardPersistentNasdaqCompaniesRepository[F]]
 
   lazy val getNasdaqCompanies: GetNasdaqCompanies[F]
   = wire[GetNasdaqCompaniesImpl[F]]
 
-  lazy val refreshPersistentNasdaqCompaniesRepository: RefreshPersistentNasdaqCompaniesRepository[F]
-  = wireWith(RefreshPersistentNasdaqCompaniesRepositoryFactory.create _)
+  lazy val refreshNasdaqCompaniesRepository: RefreshNasdaqCompaniesRepository[F]
+  = wire[RefreshNasdaqCompaniesRepositoryImpl[F]]
 }

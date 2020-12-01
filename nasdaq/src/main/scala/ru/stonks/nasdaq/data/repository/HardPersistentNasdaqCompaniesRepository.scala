@@ -7,27 +7,27 @@ import doobie.implicits._
 import doobie.util.fragments
 import doobie.util.transactor.Transactor
 import doobie.util.update.Update
-import ru.stonks.entity.finance.{Company, Nasdaq}
-import ru.stonks.nasdaq.domain.repository.PersistentNasdaqCompaniesRepository
+import ru.stonks.entity.finance.{Company, NasdaqIndex}
+import ru.stonks.nasdaq.domain.repository.NasdaqCompaniesRepository
 
 class HardPersistentNasdaqCompaniesRepository[F[_] : Sync](
   transactor: Transactor[F]
-) extends PersistentNasdaqCompaniesRepository[F] {
+) extends NasdaqCompaniesRepository[F] {
 
   override def saveOrUpdateAll(companies: List[Company]): F[Boolean] = {
     val upsertSql =
-      s""" insert into company(ticker, market_index) values (?, lower('$Nasdaq'))
+      s""" insert into company(ticker, market_index) values (?, lower('$NasdaqIndex'))
          | on conflict (ticker, market_index) do nothing
          |""".stripMargin
-    Update[Company](upsertSql)
-      .updateMany(companies)
+    Update[String](upsertSql)
+      .updateMany(companies.map(_.ticker))
       .map(_ => true)
       .transact(transactor)
   }
 
   override def findAll: F[List[Company]] =
     sql""" select (ticker) from company
-         | where lower(market_index) = lower(${Nasdaq.toString})
+         | where lower(market_index) = lower(${NasdaqIndex.toString})
          |""".stripMargin
       .query[Company]
       .to[List]

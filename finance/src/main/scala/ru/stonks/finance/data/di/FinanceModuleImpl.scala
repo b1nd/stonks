@@ -7,15 +7,16 @@ import doobie.util.transactor.Transactor
 import org.http4s.client.Client
 import ru.stonks.finance.core.domain.FinanceModule
 import ru.stonks.finance.core.domain.usecase._
+import ru.stonks.finance.data.client._
 import ru.stonks.finance.data.repository._
+import ru.stonks.finance.domain.client._
 import ru.stonks.finance.domain.repository._
 import ru.stonks.finance.domain.usecase._
 import ru.stonks.nasdaq.core.domain.NasdaqModule
 
 class FinanceModuleImpl[F[_]](
   nasdaqModule: NasdaqModule[F],
-  financeApiBaseUrl: String,
-  financeApiKey: String,
+  financeApiClientCredentials: FinanceApiClientCredentials,
   client: Client[F],
   transactor: Transactor[F])(implicit
   sync: Sync[F],
@@ -27,33 +28,16 @@ class FinanceModuleImpl[F[_]](
 
   import nasdaqModule._
 
-  private object RefreshPersistentStockRepositoryFactory {
-    def create(persistentStockRepository: PersistentStockRepository[F]): RefreshPersistentStockRepository[F] = {
-      val realTimeStockRepository = new RealTimeStockRepository[F](
-        financeApiBaseUrl, financeApiKey, client
-      )
-      new RefreshPersistentStockRepositoryImpl[F](realTimeStockRepository, persistentStockRepository)
-    }
-  }
+  lazy val marketCapitalizationClient: MarketCapitalizationClient[F]
+  = wire[RealTimeMarketCapitalizationClient[F]]
 
-  private object RefreshPersistentMarketCapitalizationRepositoryFactory {
-    def create(
-      persistentMarketCapitalizationRepository: PersistentMarketCapitalizationRepository[F]
-    ): RefreshPersistentMarketCapitalizationRepository[F] = {
-      val realTimeMarketCapitalizationRepository = new RealTimeMarketCapitalizationRepository[F](
-        financeApiBaseUrl, financeApiKey, client
-      )
-      new RefreshPersistentMarketCapitalizationRepositoryImpl[F](
-        realTimeMarketCapitalizationRepository,
-        persistentMarketCapitalizationRepository
-      )
-    }
-  }
+  lazy val stockClient: StockClient[F]
+  = wire[RealTimeStockClient[F]]
 
-  lazy val persistentMarketCapitalizationRepository: PersistentMarketCapitalizationRepository[F]
+  lazy val marketCapitalizationRepository: MarketCapitalizationRepository[F]
   = wire[HardPersistentMarketCapitalizationRepository[F]]
 
-  lazy val persistentStockRepository: PersistentStockRepository[F]
+  lazy val stockRepository: StockRepository[F]
   = wire[HardPersistentStockRepository[F]]
 
   lazy val getCompanies: GetCompanies[F]
@@ -62,16 +46,19 @@ class FinanceModuleImpl[F[_]](
   lazy val getCompaniesStocks: GetCompaniesStocks[F]
   = wire[GetCompaniesStocksImpl[F]]
 
-  lazy val refreshPersistentCompaniesRepository: RefreshPersistentCompaniesRepository[F]
-  = wire[RefreshPersistentCompaniesRepositoryImpl[F]]
-
   lazy val getCompanyMarketCapitalization: GetCompanyMarketCapitalization[F]
   = wire[GetCompanyMarketCapitalizationImpl[F]]
 
-  lazy val refreshPersistentMarketCapitalizationRepository: RefreshPersistentMarketCapitalizationRepository[F]
-  = wireWith(RefreshPersistentMarketCapitalizationRepositoryFactory.create _)
+  lazy val refreshCompaniesRepository: RefreshCompaniesRepository[F]
+  = wire[RefreshCompaniesRepositoryImpl[F]]
 
-  lazy val refreshPersistentStockRepository: RefreshPersistentStockRepository[F]
-  = wireWith(RefreshPersistentStockRepositoryFactory.create _)
+  lazy val refreshMarketCapitalizationRepository: RefreshMarketCapitalizationRepository[F]
+  = wire[RefreshMarketCapitalizationRepositoryImpl[F]]
+
+  lazy val refreshStockRepository: RefreshStockRepository[F]
+  = wire[RefreshStockRepositoryImpl[F]]
+
+  lazy val refreshAllFinanceRepositories: RefreshAllFinanceRepositories[F]
+  = wire[RefreshAllFinanceRepositoriesImpl[F]]
 
 }

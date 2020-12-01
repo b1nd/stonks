@@ -7,16 +7,15 @@ import ru.stonks.app.config.DatabaseConfig
 
 class AppDatabase[F[_] : Async : ContextShift](databaseConfig: DatabaseConfig) {
   def run: Resource[F, HikariTransactor[F]] = for {
-    ce <- ExecutionContexts.fixedThreadPool(databaseConfig.pool)
+    ec <- ExecutionContexts.fixedThreadPool(databaseConfig.pool)
     be <- Blocker[F]
-    tx <-
-      HikariTransactor.newHikariTransactor(
-        databaseConfig.driver,
-        databaseConfig.url,
-        databaseConfig.user,
-        databaseConfig.password,
-        ce,
-        be)
+    tx <- HikariTransactor.newHikariTransactor(
+            databaseConfig.driver,
+            databaseConfig.url,
+            databaseConfig.user,
+            databaseConfig.password,
+            ec,
+            be)
   } yield tx
 }
 

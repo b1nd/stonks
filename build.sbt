@@ -8,7 +8,11 @@ lazy val stonks = project
   .settings(libraryDependencies ++= Seq(Dependency.Postgresql))
   .aggregate(
     app,
-    entity
+    entity,
+    finance,
+    finance_core,
+    nasdaq,
+    nasdaq_core
   )
 
 lazy val app = project

@@ -9,6 +9,6 @@ class GetCompanyMarketCapitalizationImpl[F[_]](
 ) extends GetCompanyMarketCapitalization[F] {
 
   override def run(company: Company): F[Option[MarketCapitalization]] = {
-    marketCapitalizationRepository.get(company)
+    marketCapitalizationRepository.find(company)
   }
 }

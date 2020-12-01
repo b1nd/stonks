@@ -10,10 +10,10 @@ object App extends IOApp {
     val app = for {
       config <- AppConfig.run[IO]
       dbToClient <- (
-        AppDatabase[IO](config.db).run,
-        AppClient[IO](config.client).run
+          AppDatabase[IO](config.db).run,
+          AppClient[IO](config.client).run
         ).parTupled
-      _ <- Resource.liftF(IO.pure(dbToClient)).map { case (db, client) =>
+      modules <- Resource.liftF(IO.pure(dbToClient)).map { case (db, client) =>
         AppModules(config.financeApi, db, client)
       }
       _ <- AppServer[IO](config.server).run

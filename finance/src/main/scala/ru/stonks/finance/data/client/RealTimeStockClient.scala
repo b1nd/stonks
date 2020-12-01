@@ -1,47 +1,45 @@
-package ru.stonks.finance.data.repository
+package ru.stonks.finance.data.client
 
+import cats.MonadError
 import cats.effect.{ContextShift, Sync}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.{Applicative, MonadError}
 import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.{Method, Request, Uri}
 import ru.stonks.entity.finance.{Company, Stock}
 import ru.stonks.finance.data.dto.StockResponse
-import ru.stonks.finance.domain.repository.StockRepository
+import ru.stonks.finance.domain.client.StockClient
 
-class RealTimeStockRepository[F[_] : Sync : ContextShift](
-  financeApiBaseUrl: String,
-  financeApiKey: String,
+class RealTimeStockClient[F[_] : Sync : ContextShift](
+  financeApiClientCredentials: FinanceApiClientCredentials,
   client: Client[F])(implicit
   F: MonadError[F, Throwable]
-) extends StockRepository[F] {
+) extends StockClient[F] {
 
-  override def findAllByCompanies(companies: List[Company]): F[Map[Company, Stock]] = for {
+  override def getAllByCompanies(companies: List[Company]): F[Map[Company, Stock]] = for {
     uri <- createUri(companies)
-    request <- mkRequest(uri)
+    request = mkRequest(uri)
     response <- fetchRequest(request)
-    stocksByCompanies <- handleResponse(response)
+    stocksByCompanies = handleResponse(response)
   } yield stocksByCompanies
 
   private def createUri(companies: List[Company]) = for {
-    baseUri <- F.fromEither[Uri](Uri.fromString(s"$financeApiBaseUrl/quote/${companies.map(_.ticker).mkString(",")}"))
-    uri <- F.pure(baseUri.withQueryParam("apikey", financeApiKey))
+    baseUri <- F.fromEither[Uri](Uri.fromString(
+      s"${financeApiClientCredentials.baseUrl}/quote/${companies.map(_.ticker).mkString(",")}"))
+    uri = baseUri.withQueryParam("apikey", financeApiClientCredentials.key)
   } yield uri
 
-  private def mkRequest(uri: Uri) = Applicative[F].pure {
+  private def mkRequest(uri: Uri) =
     Request[F]()
       .withMethod(Method.GET)
       .withUri(uri)
-  }
 
   private def fetchRequest(request: Request[F]) =
     client.fetchAs(request)(jsonOf[F, List[StockResponse]])
 
-  private def handleResponse(response: List[StockResponse]) = Applicative[F].pure {
+  private def handleResponse(response: List[StockResponse]) =
     response
       .map(r => (Company(r.symbol), Stock(r.price, r.volume)))
       .toMap
-  }
 }

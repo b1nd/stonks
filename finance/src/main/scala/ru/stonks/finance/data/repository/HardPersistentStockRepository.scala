@@ -8,22 +8,22 @@ import doobie.util.fragments
 import doobie.util.transactor.Transactor
 import doobie.util.update.Update
 import ru.stonks.entity.finance.{Company, Stock}
-import ru.stonks.finance.domain.repository.PersistentStockRepository
+import ru.stonks.finance.domain.repository.StockRepository
 
 class HardPersistentStockRepository[F[_] : Sync](
   transactor: Transactor[F]
-) extends PersistentStockRepository[F] {
+) extends StockRepository[F] {
 
   override def saveAll(companiesToStocks: List[(Company, Stock)]): F[Boolean] = {
     val upsertSql =
       s""" insert into stock(ticker, dollars_price, volume) values (?, ?, ?)
          | on conflict (ticker) do update set
-         | dollars_price = ?,
-         | volume = ?
+         | dollars_price = excluded.dollars_price,
+         | volume = excluded.volume
          |""".stripMargin
-    Update[(String, BigDecimal, Long, BigDecimal, Long)](upsertSql)
+    Update[(String, BigDecimal, Long)](upsertSql)
       .updateMany(companiesToStocks.map { case (company, stock) =>
-        (company.ticker, stock.dollarsPrice, stock.volume, stock.dollarsPrice, stock.volume)
+        (company.ticker, stock.dollarsPrice, stock.volume)
       })
       .map(_ => true)
       .transact(transactor)
