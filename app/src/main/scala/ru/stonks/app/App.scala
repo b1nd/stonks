@@ -1,6 +1,6 @@
 package ru.stonks.app
 
-import cats.effect.{ExitCode, IO, IOApp, Resource}
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.parallel._
 import ru.stonks.app.component._
 
@@ -13,9 +13,8 @@ object App extends IOApp {
           AppDatabase[IO](config.db).run,
           AppClient[IO](config.client).run
         ).parTupled
-      modules <- Resource.liftF(IO.pure(dbToClient)).map { case (db, client) =>
-        AppModules(config.financeApi, db, client)
-      }
+      (db, client) = dbToClient
+      modules = AppModules(config.financeApi, db, client)
       _ <- AppServer[IO](config.server).run
     } yield ()
 
