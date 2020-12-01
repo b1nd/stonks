@@ -31,13 +31,12 @@ class HardPersistentStockRepository[F[_] : Sync](
 
   override def findAllByCompanies(
     companies: List[Company]
-  ): F[Map[Company, Stock]] = NonEmptyList.fromList(companies) match {
-    case None => Applicative[F].pure(Map.empty)
+  ): F[List[(Company, Stock)]] = NonEmptyList.fromList(companies) match {
+    case None => Applicative[F].pure(List.empty)
     case Some(nonEmptyCompanies) =>
       (fr"select ticker, dollars_price, volume from stock where" ++ fragments.in(fr"ticker", nonEmptyCompanies))
         .query[(Company, Stock)]
         .to[List]
-        .map(_.toMap)
         .transact(transactor)
   }
 }

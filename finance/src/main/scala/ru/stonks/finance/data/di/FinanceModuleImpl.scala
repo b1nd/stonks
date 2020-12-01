@@ -49,6 +49,9 @@ class FinanceModuleImpl[F[_]](
   lazy val getCompanyMarketCapitalization: GetCompanyMarketCapitalization[F]
   = wire[GetCompanyMarketCapitalizationImpl[F]]
 
+  lazy val getCompaniesMarketCapitalization: GetCompaniesMarketCapitalization[F]
+  = wire[GetCompaniesMarketCapitalizationImpl[F]]
+
   lazy val refreshCompaniesRepository: RefreshCompaniesRepository[F]
   = wire[RefreshCompaniesRepositoryImpl[F]]
 

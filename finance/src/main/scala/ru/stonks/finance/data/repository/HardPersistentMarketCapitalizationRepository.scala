@@ -1,7 +1,10 @@
 package ru.stonks.finance.data.repository
 
+import cats.Applicative
+import cats.data.NonEmptyList
 import cats.effect.Sync
 import doobie.implicits._
+import doobie.util.fragments
 import doobie.util.transactor.Transactor
 import doobie.util.update.Update
 import ru.stonks.entity.finance.{Company, MarketCapitalization}
@@ -18,6 +21,17 @@ class HardPersistentMarketCapitalizationRepository[F[_] : Sync](
       .query[MarketCapitalization]
       .option
       .transact(transactor)
+
+  override def findAllByCompanies(
+    companies: List[Company]
+  ): F[List[(Company, MarketCapitalization)]] = NonEmptyList.fromList(companies) match {
+    case None => Applicative[F].pure(List.empty)
+    case Some(nonEmptyCompanies) =>
+      (fr"select ticker, dollars from market_capitalization where" ++ fragments.in(fr"ticker", nonEmptyCompanies))
+        .query[(Company, MarketCapitalization)]
+        .to[List]
+        .transact(transactor)
+  }
 
   override def save(
     company: Company,

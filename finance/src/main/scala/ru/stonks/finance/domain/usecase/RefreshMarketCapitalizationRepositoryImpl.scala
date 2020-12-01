@@ -15,13 +15,8 @@ class RefreshMarketCapitalizationRepositoryImpl[F[_] : Sync : Concurrent : Paral
 ) extends RefreshMarketCapitalizationRepository[F] {
 
   override def run(companies: List[Company]): F[Boolean] = for {
-    // fixme: fails if parallelism > 1
-    companiesToCapitalization <- Concurrent.parSequenceN(1)(companies.map { company =>
-      marketCapitalizationClient.get(company).map(_.map { capitalization =>
-        (company, capitalization)
-      })
-    })
+    companiesToCapitalization <- marketCapitalizationClient.getAll(companies)
     isCompaniesSaved <- marketCapitalizationRepository
-      .saveAll(companiesToCapitalization.flatten)
+      .saveAll(companiesToCapitalization)
   } yield isCompaniesSaved
 }

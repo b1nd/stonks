@@ -18,17 +18,44 @@ class RealTimeMarketCapitalizationClient[F[_] : Sync : ContextShift](
 ) extends MarketCapitalizationClient[F] {
 
   override def get(company: Company): F[Option[MarketCapitalization]] = for {
-    uri <- createUri(company)
+    uri <- singleMarketCapUri(company)
     request = mkRequest(uri)
     response <- fetchRequest(request)
-    maybeMarketCapitalization = handleResponse(response)
+    maybeMarketCapitalization = handleSingleCapResponse(response)
   } yield maybeMarketCapitalization
 
-  private def createUri(company: Company) = for {
-    baseUri <- F.fromEither[Uri](Uri.fromString(
-      s"${financeApiClientCredentials.baseUrl}/market-capitalization/${company.ticker}"))
-    uri = baseUri.withQueryParam("apikey", financeApiClientCredentials.key)
+  override def getAll(companies: List[Company]): F[List[(Company, MarketCapitalization)]] = for {
+    uri <- multipleMarketCapUri(companies)
+    request = mkRequest(uri)
+    response <- fetchRequest(request)
+    companiesMarketCapitalization = handleMultiCapResponse(response)
+  } yield companiesMarketCapitalization
+
+  private def singleMarketCapUri(company: Company) = for {
+    baseUri <- uriFromString(
+      s"${financeApiClientCredentials.baseUrl}/market-capitalization/${company.ticker}")
+    uri = withApiKey(baseUri)
   } yield uri
+
+  private def handleSingleCapResponse(response: List[MarketCapitalizationResponse]) =
+    response
+      .map(r => MarketCapitalization(r.marketCap))
+      .headOption
+
+  private def multipleMarketCapUri(companies: List[Company]) = for {
+    baseUri <- uriFromString(
+      s"${financeApiClientCredentials.baseUrl}/quote/${companies.map(_.ticker).mkString(",")}")
+    uri = withApiKey(baseUri)
+  } yield uri
+
+  private def handleMultiCapResponse(response: List[MarketCapitalizationResponse]) =
+    response.map(r => (Company(r.symbol), MarketCapitalization(r.marketCap)))
+
+  private def uriFromString(stringUri: String) =
+    F.fromEither[Uri](Uri.fromString(stringUri))
+
+  private def withApiKey(uri: Uri) =
+    uri.withQueryParam("apikey", financeApiClientCredentials.key)
 
   private def mkRequest(uri: Uri) =
     Request[F]()
@@ -37,9 +64,4 @@ class RealTimeMarketCapitalizationClient[F[_] : Sync : ContextShift](
 
   private def fetchRequest(request: Request[F]) =
     client.fetchAs(request)(jsonOf[F, List[MarketCapitalizationResponse]])
-
-  private def handleResponse(response: List[MarketCapitalizationResponse]) =
-    response
-      .map(r => MarketCapitalization(r.marketCap))
-      .headOption
 }
