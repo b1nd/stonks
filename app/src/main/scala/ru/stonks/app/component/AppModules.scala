@@ -4,6 +4,7 @@ import cats.effect.{Concurrent, ContextShift, Sync}
 import cats.{MonadError, Parallel}
 import doobie.util.transactor.Transactor
 import org.http4s.client.Client
+import ru.stonks.algorithm.data.di.AlgorithmModuleImpl
 import ru.stonks.app.config.FinanceApiConfig
 import ru.stonks.finance.data.client.FinanceApiClientCredentials
 import ru.stonks.finance.data.di.FinanceModuleImpl
@@ -13,6 +14,7 @@ import ru.stonks.nasdaq.data.di.NasdaqModuleImpl
 trait AppModules[F[_]] {
   def nasdaqModule: NasdaqModuleImpl[F]
   def financeModule: FinanceModuleImpl[F]
+  def algorithmModule: AlgorithmModuleImpl[F]
 }
 
 object AppModules {
@@ -38,6 +40,10 @@ object AppModules {
         key = financeApiConfig.apiKey),
       client = client,
       transactor = transactor
+    )
+
+    override lazy val algorithmModule: AlgorithmModuleImpl[F] = new AlgorithmModuleImpl[F](
+      financeModule
     )
   }
 }

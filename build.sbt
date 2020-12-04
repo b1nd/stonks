@@ -12,7 +12,9 @@ lazy val stonks = project
     finance,
     finance_core,
     nasdaq,
-    nasdaq_core
+    nasdaq_core,
+    algorithm,
+    algorithm_core
   )
 
 lazy val app = project
@@ -38,7 +40,8 @@ lazy val app = project
   .dependsOn(
     entity,
     finance,
-    nasdaq
+    nasdaq,
+    algorithm
   )
 
 lazy val entity = project
@@ -93,5 +96,27 @@ lazy val nasdaq = project
 
 lazy val nasdaq_core = project
   .in(file("nasdaq_core"))
+  .settings(Settings.Common)
+  .dependsOn(entity)
+
+lazy val algorithm = project
+  .in(file("algorithm"))
+  .settings(Settings.Common)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependency.CatsCore,
+      Dependency.CatsEffect,
+      Dependency.MacwireMacros,
+      Dependency.Scalatest,
+      Dependency.Scalamock
+    ))
+  .dependsOn(
+    entity,
+    algorithm_core,
+    finance_core
+  )
+
+lazy val algorithm_core = project
+  .in(file("algorithm_core"))
   .settings(Settings.Common)
   .dependsOn(entity)

@@ -15,6 +15,8 @@ object Dependency {
     val Logback    = "1.2.3"
     val Log4cats   = "1.1.1"
     val Macwire    = "2.3.7"
+    val Scalatest  = "3.2.2"
+    val Scalamock  = "5.0.0"
   }
 
   val CatsCore   = "org.typelevel" %% "cats-core" % Version.CatsCore
@@ -44,4 +46,7 @@ object Dependency {
   val Log4catsSlf4j  = "io.chrisdavenport" %% "log4cats-slf4j" % Version.Log4cats
 
   val MacwireMacros = "com.softwaremill.macwire" %% "macros" % Version.Macwire % Provided
+
+  val Scalatest = "org.scalatest" %% "scalatest" % Version.Scalatest % Test
+  val Scalamock = "org.scalamock" %% "scalamock" % Version.Scalamock % Test
 }
