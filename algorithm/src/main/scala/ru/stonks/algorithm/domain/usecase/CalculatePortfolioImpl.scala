@@ -15,8 +15,6 @@ class CalculatePortfolioImpl[F[_] : Sync](
   getCompaniesStocks: GetCompaniesStocks[F]
 ) extends CalculatePortfolio[F] {
 
-  private case class ErrorContainer(error: CalculatePortfolioError)
-
   override def run(params: CalculatePortfolioParams): F[Either[CalculatePortfolioError, Portfolio]] = (for {
     companies        <- getCompanies(params)
     companyToCap     <- EitherT.right(getCompaniesMarketCapitalization.run(companies))
@@ -26,36 +24,44 @@ class CalculatePortfolioImpl[F[_] : Sync](
     minStockPrice    <- getMinimumStockPrice(companyToStock, portfolioSum)
     sharedPortfolio  = getSharedPortfolioStocks(orderedCompanies, companyToCap, companyToStock, portfolioSum)
     portfolio        = fillPortfolio(sharedPortfolio, companyToStock, minStockPrice, portfolioSum)
-  } yield portfolio).leftMap(_.error).value
+  } yield portfolio).value
 
   private def getCompanies(
     params: CalculatePortfolioParams
-  ): EitherT[F, ErrorContainer, List[Company]] = for {
+  ): EitherT[F, CalculatePortfolioError, List[Company]] = for {
     indexCompanies    <- EitherT.right(getCompanies.run(params.marketIndex))
-    _                 <- EitherT.cond(indexCompanies.nonEmpty, indexCompanies,
-                           ErrorContainer(EmptyIndexCompaniesError(params.marketIndex)))
+    _                 <- EitherT.cond[F][CalculatePortfolioError, List[Company]](
+                           indexCompanies.nonEmpty,
+                           indexCompanies,
+                           EmptyIndexCompaniesError(params.marketIndex))
     filteredCompanies = indexCompanies.diff(params.excludeCompanies)
-    companiesOrError  <- EitherT.cond(filteredCompanies.nonEmpty, filteredCompanies,
-                           ErrorContainer(AllCompaniesExcludedError))
+    companiesOrError  <- EitherT.cond[F][CalculatePortfolioError, List[Company]](
+                           filteredCompanies.nonEmpty,
+                           filteredCompanies,
+                           AllCompaniesExcludedError)
   } yield companiesOrError
 
   private def getCompaniesStocks(
     companies: List[Company]
-  ): EitherT[F, ErrorContainer, Map[Company, Stock]] = for {
+  ): EitherT[F, CalculatePortfolioError, Map[Company, Stock]] = for {
     companyToStock         <- EitherT.right(getCompaniesStocks.run(companies))
     companiesWithoutStocks = companies.diff(companyToStock.keys.toSeq)
-    companyToStockOrError  <- EitherT.cond(companiesWithoutStocks.isEmpty, companyToStock,
-                                ErrorContainer(NotAllCompaniesHaveStocksError(companiesWithoutStocks)))
+    companyToStockOrError  <- EitherT.cond[F][CalculatePortfolioError, Map[Company, Stock]](
+                                companiesWithoutStocks.isEmpty,
+                                companyToStock,
+                                NotAllCompaniesHaveStocksError(companiesWithoutStocks))
   } yield companyToStockOrError
 
   private def orderCompanies(
     companies: List[Company],
     companyToCap: Map[Company, MarketCapitalization],
     params: CalculatePortfolioParams
-  ): EitherT[F, ErrorContainer, List[Company]] = for {
+  ): EitherT[F, CalculatePortfolioError, List[Company]] = for {
     companiesWithoutCap    <- EitherT.rightT(companies.diff(companyToCap.keys.toSeq))
-    companiesThatHaveCap   <- EitherT.cond(companiesWithoutCap.isEmpty, companies,
-                                ErrorContainer(NotAllCompaniesHaveCapitalizationError(companiesWithoutCap)))
+    companiesThatHaveCap   <- EitherT.cond[F][CalculatePortfolioError, List[Company]](
+                                companiesWithoutCap.isEmpty,
+                                companies,
+                                NotAllCompaniesHaveCapitalizationError(companiesWithoutCap))
     orderedCompanies       = companiesThatHaveCap.sortBy(company => -companyToCap(company).dollars)
     indexCapDepthCompanies = params.indexCapDepth
                                .map(orderedCompanies.take)
@@ -65,11 +71,11 @@ class CalculatePortfolioImpl[F[_] : Sync](
   private def getMinimumStockPrice(
     companyToStock: Map[Company, Stock],
     dollarsSum: BigDecimal
-  ): EitherT[F, ErrorContainer, BigDecimal] = {
+  ): EitherT[F, CalculatePortfolioError, BigDecimal] = {
     val minStockPrice = companyToStock.map { case (_, stock) => stock.dollarsPrice }.min
     EitherT.cond(dollarsSum >= minStockPrice,
       minStockPrice,
-      ErrorContainer(NotEnoughMoneyError(minStockPrice)))
+      NotEnoughMoneyError(minStockPrice))
   }
 
   private def getSharedPortfolioStocks(
