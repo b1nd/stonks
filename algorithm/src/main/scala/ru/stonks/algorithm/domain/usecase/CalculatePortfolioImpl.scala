@@ -101,40 +101,39 @@ class CalculatePortfolioImpl[F[_] : Sync](
     dollarsSum: BigDecimal
   ): Portfolio = {
 
-    @tailrec def fillStocksByOne(
+    def fillStocksByOne(
       portfolioStocks: List[PortfolioCompanyStock],
       remainingSum: BigDecimal,
       acc: List[PortfolioCompanyStock] = Nil
-    ): List[PortfolioCompanyStock] = portfolioStocks match {
-      case _ if remainingSum < minStockPrice => acc ::: portfolioStocks
-      case (stock@PortfolioCompanyStock(company, count, sum)) :: tail
-        if remainingSum >= companyToStock(company).dollarsPrice =>
-        val price          = companyToStock(company).dollarsPrice
-        val portfolioStock = stock.copy(
-          count = count + 1,
-          sum = sum + price)
-        fillStocksByOne(tail, remainingSum - price, portfolioStock :: acc)
-      case head :: tail => fillStocksByOne(tail, remainingSum, head :: acc)
-      case Nil => acc
+    ): (List[PortfolioCompanyStock], BigDecimal) = portfolioStocks.foldLeft((acc, remainingSum)) {
+      case ((acc, remainingSum), stock@PortfolioCompanyStock(company, count, stockSum)) =>
+        if (remainingSum < minStockPrice) {
+          (stock :: acc, remainingSum)
+        } else if (remainingSum >= companyToStock(company).dollarsPrice) {
+          val price          = companyToStock(company).dollarsPrice
+          val portfolioStock = stock.copy(
+            count = count + 1,
+            sum = stockSum + price)
+          (portfolioStock :: acc, remainingSum - price)
+        } else {
+          (stock :: acc, remainingSum)
+        }
     }
 
     @tailrec def fillUntilFull(
       portfolioStocks: List[PortfolioCompanyStock],
-      totalSum: BigDecimal
-    ): List[PortfolioCompanyStock] = {
-      val currentPortfolioSum = portfolioStocks.map(_.sum).sum
-      if (totalSum - currentPortfolioSum >= minStockPrice) {
-        val currentPortfolio = fillStocksByOne(portfolioStocks, totalSum - currentPortfolioSum)
-        fillUntilFull(currentPortfolio, totalSum)
-      } else {
-        portfolioStocks
-      }
+      dollarsSum: BigDecimal
+    ): List[PortfolioCompanyStock] = if (dollarsSum >= minStockPrice) {
+      val (currentPortfolio, remainingSum) = fillStocksByOne(portfolioStocks, dollarsSum)
+      fillUntilFull(currentPortfolio, remainingSum)
+    } else {
+      portfolioStocks
     }
 
-    val (zeroStocks, otherStocks) = sharedPortfolioStocks.partition(_.count == 0)
-    val filledZeroStocks          = fillStocksByOne(zeroStocks, dollarsSum)
-    val allStocks                 = otherStocks ::: filledZeroStocks
-    val filledPortfolioStocks     = fillUntilFull(allStocks, dollarsSum)
+    val (zeroStocks, otherStocks)        = sharedPortfolioStocks.partition(_.count == 0)
+    val (filledZeroStocks, remainingSum) = fillStocksByOne(zeroStocks, dollarsSum)
+    val allStocks                        = otherStocks ::: filledZeroStocks
+    val filledPortfolioStocks            = fillUntilFull(allStocks, remainingSum)
 
     Portfolio(filledPortfolioStocks)
   }
