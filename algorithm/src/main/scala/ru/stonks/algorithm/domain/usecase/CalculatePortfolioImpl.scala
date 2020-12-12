@@ -130,8 +130,9 @@ class CalculatePortfolioImpl[F[_] : Sync](
       portfolioStocks
     }
 
+    val remainingSumAfterSharedPortfolio = dollarsSum - sharedPortfolioStocks.map(_.sum).sum
     val (zeroStocks, otherStocks)        = sharedPortfolioStocks.partition(_.count == 0)
-    val (filledZeroStocks, remainingSum) = fillStocksByOne(zeroStocks, dollarsSum)
+    val (filledZeroStocks, remainingSum) = fillStocksByOne(zeroStocks, remainingSumAfterSharedPortfolio)
     val allStocks                        = otherStocks ::: filledZeroStocks
     val filledPortfolioStocks            = fillUntilFull(allStocks, remainingSum)
 

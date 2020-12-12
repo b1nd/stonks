@@ -131,6 +131,34 @@ class CalculatePortfolioImplTest extends AnyFlatSpec with Matchers with MockFact
     portfolio shouldBe Left(AllCompaniesExcludedError)
   }
 
+  it should s"calculate portfolio with sum not more than investment sum" in {
+    val companies    = List(Company("GOOG"), Company("AAPL"), Company("AMZN"))
+    val getCompanies = mkGetCompanies(companies)
+
+    val getCompaniesMarketCapitalization = mkGetCompaniesMarketCapitalization(Map(
+      Company("AMZN") -> MarketCapitalization(200),
+      Company("AAPL") -> MarketCapitalization(300),
+      Company("GOOG") -> MarketCapitalization(100)
+    ))
+    val getCompaniesStocks = mkGetCompaniesStocks(Map(
+      Company("AAPL") -> Stock(120, 99),
+      Company("AMZN") -> Stock(110, 99),
+      Company("GOOG") -> Stock(130, 99)
+    ))
+    val calculatePortfolio = new CalculatePortfolioImpl(
+      getCompanies, getCompaniesMarketCapitalization, getCompaniesStocks
+    )
+    val investmentSum = BigDecimal(400)
+    val params = CalculatePortfolioParams(NasdaqIndex, investmentSum, None, Nil)
+    val portfolio = calculatePortfolio.run(params).unsafeRunSync()
+
+    portfolio match {
+      case Left(error) => fail(error.message)
+      case Right(Portfolio(portfolioStocks)) => portfolioStocks
+        .map(_.sum).sum should be <= investmentSum
+    }
+  }
+
   it should s"calculate portfolio only for index cap depth" in {
     val companies    = List(Company("AAPL"), Company("AMZN"), Company("GOOG"))
     val getCompanies = mkGetCompanies(companies)
