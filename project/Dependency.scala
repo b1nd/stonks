@@ -3,21 +3,25 @@ import sbt._
 object Dependency {
 
   object Version {
-    val Scala      = "2.13.4"
-    val CatsCore   = "2.2.0"
-    val CatsEffect = "2.2.0"
-    val Http4s     = "0.21.11"
-    val Circe      = "0.13.0"
-    val Postgresql = "42.2.18"
-    val Doobie     = "0.9.4"
-    val Pureconfig = "0.14.0"
-    val Slf4j      = "1.7.30"
-    val Logback    = "1.2.3"
-    val Log4cats   = "1.1.1"
-    val Macwire    = "2.3.7"
-    val Scalatest  = "3.2.2"
-    val Scalamock  = "5.0.0"
+    val Scala       = "2.13.4"
+    val Enumeratum = "1.6.1"
+    val CatsCore    = "2.2.0"
+    val CatsEffect  = "2.2.0"
+    val Http4s      = "0.21.7"
+    val Circe       = "0.13.0"
+    val Postgresql  = "42.2.18"
+    val Doobie      = "0.9.4"
+    val Pureconfig  = "0.14.0"
+    val Slf4j       = "1.7.30"
+    val Logback     = "1.2.3"
+    val Log4cats    = "1.1.1"
+    val Macwire     = "2.3.7"
+    val Scalatest   = "3.2.2"
+    val Scalamock   = "5.0.0"
+    val Telegramium = "2.50.0"
   }
+
+  val Enumeratum = "com.beachape" %% "enumeratum" % Version.Enumeratum
 
   val CatsCore   = "org.typelevel" %% "cats-core" % Version.CatsCore
   val CatsEffect = "org.typelevel" %% "cats-effect" % Version.CatsEffect
@@ -46,6 +50,9 @@ object Dependency {
   val Log4catsSlf4j  = "io.chrisdavenport" %% "log4cats-slf4j" % Version.Log4cats
 
   val MacwireMacros = "com.softwaremill.macwire" %% "macros" % Version.Macwire % Provided
+
+  val TelegramiumCore = "io.github.apimorphism" %% "telegramium-core" % Version.Telegramium
+  val TelegramiumHigh = "io.github.apimorphism" %% "telegramium-high" % Version.Telegramium
 
   val Scalatest = "org.scalatest" %% "scalatest" % Version.Scalatest % Test
   val Scalamock = "org.scalamock" %% "scalamock" % Version.Scalamock % Test

@@ -1,5 +1,15 @@
 package ru.stonks.entity.finance
 
-sealed trait MarketIndex
+import enumeratum._
 
-case object NasdaqIndex extends MarketIndex
+sealed trait MarketIndex extends EnumEntry {
+  def shortName: String
+}
+
+object MarketIndex extends Enum[MarketIndex] {
+  val values: IndexedSeq[MarketIndex] = findValues
+
+  case object NasdaqIndex extends MarketIndex {
+    override def shortName: String = "Nasdaq 100"
+  }
+}

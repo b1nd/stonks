@@ -1,3 +1,6 @@
+import sbtassembly.AssemblyKeys.assembly
+import sbtassembly.{MergeStrategy, PathList}
+
 ThisBuild / name := "stonks"
 ThisBuild / organization := "ru.stonks"
 
@@ -14,7 +17,11 @@ lazy val stonks = project
     nasdaq,
     nasdaq_core,
     algorithm,
-    algorithm_core
+    algorithm_core,
+    user,
+    user_core,
+    bot,
+    bot_core
   )
 
 lazy val app = project
@@ -22,6 +29,11 @@ lazy val app = project
   .settings(Settings.Common)
   .settings(
     Compile / mainClass := Some("ru.stonks.app.App"),
+    assembly / test := {},
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", _) => MergeStrategy.discard
+      case _ => MergeStrategy.first
+    },
     libraryDependencies ++= Seq(
       Dependency.CatsCore,
       Dependency.CatsEffect,
@@ -41,12 +53,19 @@ lazy val app = project
     entity,
     finance,
     nasdaq,
-    algorithm
+    algorithm,
+    user,
+    bot
   )
 
 lazy val entity = project
   .in(file("entity"))
   .settings(Settings.Common)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependency.Enumeratum
+    )
+  )
 
 lazy val finance = project
   .in(file("finance"))
@@ -118,5 +137,50 @@ lazy val algorithm = project
 
 lazy val algorithm_core = project
   .in(file("algorithm_core"))
+  .settings(Settings.Common)
+  .dependsOn(entity)
+
+lazy val user = project
+  .in(file("user"))
+  .settings(Settings.Common)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependency.CatsCore,
+      Dependency.CatsEffect,
+      Dependency.MacwireMacros,
+      Dependency.DoobieCore
+    ))
+  .dependsOn(
+    entity,
+    user_core
+  )
+
+lazy val user_core = project
+  .in(file("user_core"))
+  .settings(Settings.Common)
+  .dependsOn(entity)
+
+lazy val bot = project
+  .in(file("bot"))
+  .settings(Settings.Common)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependency.CatsCore,
+      Dependency.CatsEffect,
+      Dependency.MacwireMacros,
+      Dependency.DoobieCore,
+      Dependency.TelegramiumCore,
+      Dependency.TelegramiumHigh
+    ))
+  .dependsOn(
+    entity,
+    bot_core,
+    user_core,
+    algorithm_core,
+    finance_core
+  )
+
+lazy val bot_core = project
+  .in(file("bot_core"))
   .settings(Settings.Common)
   .dependsOn(entity)

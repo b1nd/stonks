@@ -4,7 +4,8 @@ import cats.effect.Sync
 import cats.syntax.functor._
 import cats.syntax.parallel._
 import cats.{Applicative, Parallel}
-import ru.stonks.entity.finance.{MarketIndex, NasdaqIndex}
+import ru.stonks.entity.finance.MarketIndex
+import ru.stonks.entity.finance.MarketIndex.NasdaqIndex
 import ru.stonks.finance.core.domain.usecase.RefreshCompaniesRepository
 import ru.stonks.nasdaq.core.domain.usecase.RefreshNasdaqCompaniesRepository
 

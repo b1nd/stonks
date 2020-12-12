@@ -2,7 +2,7 @@ package ru.stonks.algorithm.domain.usecase
 
 import cats.data.EitherT
 import cats.effect.Sync
-import ru.stonks.algorithm.domain.entity._
+import ru.stonks.algorithm.core.domain.usecase.CalculatePortfolio
 import ru.stonks.entity.algorithm._
 import ru.stonks.entity.finance._
 import ru.stonks.finance.core.domain.usecase._

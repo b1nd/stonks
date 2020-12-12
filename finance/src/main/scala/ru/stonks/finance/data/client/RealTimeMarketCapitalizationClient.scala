@@ -49,7 +49,7 @@ class RealTimeMarketCapitalizationClient[F[_] : Sync : ContextShift](
   } yield uri
 
   private def handleMultiCapResponse(response: List[MarketCapitalizationResponse]) =
-    response.map(r => (Company(r.symbol), MarketCapitalization(r.marketCap)))
+    response.map(r => (Company(r.symbol.toUpperCase), MarketCapitalization(r.marketCap)))
 
   private def uriFromString(stringUri: String) =
     F.fromEither[Uri](Uri.fromString(stringUri))

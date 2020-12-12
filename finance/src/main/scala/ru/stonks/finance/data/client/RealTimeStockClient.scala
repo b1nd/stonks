@@ -40,6 +40,6 @@ class RealTimeStockClient[F[_] : Sync : ContextShift](
 
   private def handleResponse(response: List[StockResponse]) =
     response
-      .map(r => (Company(r.symbol), Stock(r.price, r.volume)))
+      .map(r => (Company(r.symbol.toUpperCase), Stock(r.price, r.volume)))
       .toMap
 }

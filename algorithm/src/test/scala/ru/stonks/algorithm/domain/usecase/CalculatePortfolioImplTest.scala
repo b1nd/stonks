@@ -4,8 +4,8 @@ import cats.effect.IO
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import ru.stonks.algorithm.domain.entity._
 import ru.stonks.entity.algorithm._
+import ru.stonks.entity.finance.MarketIndex.NasdaqIndex
 import ru.stonks.entity.finance._
 import ru.stonks.finance.core.domain.usecase._
 

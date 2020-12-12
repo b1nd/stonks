@@ -2,7 +2,8 @@ package ru.stonks.finance.domain.usecase
 
 import cats.Applicative
 import cats.effect.Sync
-import ru.stonks.entity.finance.{Company, MarketIndex, NasdaqIndex}
+import ru.stonks.entity.finance.MarketIndex.NasdaqIndex
+import ru.stonks.entity.finance.{Company, MarketIndex}
 import ru.stonks.finance.core.domain.usecase.GetCompanies
 import ru.stonks.nasdaq.core.domain.usecase.GetNasdaqCompanies
 
