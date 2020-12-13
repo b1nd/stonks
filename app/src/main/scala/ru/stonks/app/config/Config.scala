@@ -5,5 +5,6 @@ final case class Config(
   db: DatabaseConfig,
   server: ServerConfig,
   client: ClientConfig,
-  telegramBot: TelegramBotConfig
+  telegramBot: TelegramBotConfig,
+  scheduling: SchedulingConfig
 )

@@ -1,5 +1,5 @@
 package ru.stonks.app.config
 
-case class TelegramBotConfig(
+final case class TelegramBotConfig(
   token: String
 )

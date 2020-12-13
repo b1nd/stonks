@@ -52,10 +52,15 @@ lazy val app = project
   .dependsOn(
     entity,
     finance,
+    finance_core,
     nasdaq,
+    nasdaq_core,
     algorithm,
+    algorithm_core,
     user,
-    bot
+    user_core,
+    bot,
+    bot_core
   )
 
 lazy val entity = project

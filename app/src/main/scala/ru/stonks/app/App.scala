@@ -18,6 +18,7 @@ object App extends IOApp {
       (db, client) = dbToClient
       botApi <- AppTelegramBotApi[F](client, config.telegramBot).run
       modules = AppModules(config.financeApi, db, client, botApi)
+      _ <- AppScheduling[F](config.scheduling, modules).run
       _ <- Resource.liftF(modules.botModule.telegramLongPollBot.start())
     } yield ()
 
