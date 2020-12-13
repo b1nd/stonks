@@ -4,5 +4,6 @@ final case class Config(
   financeApi: FinanceApiConfig,
   db: DatabaseConfig,
   server: ServerConfig,
-  client: ClientConfig
+  client: ClientConfig,
+  telegramBot: TelegramBotConfig
 )

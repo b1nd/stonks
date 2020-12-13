@@ -3,8 +3,9 @@ package ru.stonks.algorithm.data.di
 import cats.Parallel
 import cats.effect.Sync
 import com.softwaremill.macwire._
-import ru.stonks.algorithm.domain.AlgorithmModule
-import ru.stonks.algorithm.domain.usecase.{CalculatePortfolio, CalculatePortfolioImpl}
+import ru.stonks.algorithm.core.domain.AlgorithmModule
+import ru.stonks.algorithm.core.domain.usecase._
+import ru.stonks.algorithm.domain.usecase.CalculatePortfolioImpl
 import ru.stonks.finance.core.domain.FinanceModule
 
 class AlgorithmModuleImpl[F[_]: Sync: Parallel](
@@ -12,6 +13,6 @@ class AlgorithmModuleImpl[F[_]: Sync: Parallel](
 ) extends AlgorithmModule[F] {
   import financeModule._
 
-  lazy val calculatePortfolio: CalculatePortfolio[F]
+  override lazy val calculatePortfolio: CalculatePortfolio[F]
   = wire[CalculatePortfolioImpl[F]]
 }

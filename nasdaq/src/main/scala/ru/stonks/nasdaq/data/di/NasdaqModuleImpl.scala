@@ -27,7 +27,7 @@ class NasdaqModuleImpl[F[_]](
   = wire[RealTimeNasdaqCompaniesClient[F]]
 
   lazy val nasdaqCompaniesRepository: NasdaqCompaniesRepository[F]
-  = wire[HardPersistentNasdaqCompaniesRepository[F]]
+  = wire[DoobieNasdaqCompaniesRepository[F]]
 
   lazy val getNasdaqCompanies: GetNasdaqCompanies[F]
   = wire[GetNasdaqCompaniesImpl[F]]

@@ -35,13 +35,16 @@ class FinanceModuleImpl[F[_]](
   = wire[RealTimeStockClient[F]]
 
   lazy val marketCapitalizationRepository: MarketCapitalizationRepository[F]
-  = wire[HardPersistentMarketCapitalizationRepository[F]]
+  = wire[DoobieMarketCapitalizationRepository[F]]
 
   lazy val stockRepository: StockRepository[F]
-  = wire[HardPersistentStockRepository[F]]
+  = wire[DoobieStockRepository[F]]
 
   lazy val getCompanies: GetCompanies[F]
   = wire[GetCompaniesImpl[F]]
+
+  lazy val getAllNonexistentCompanies: GetAllNonexistentCompanies[F]
+  = wire[GetAllNonexistentCompaniesImpl[F]]
 
   lazy val getCompaniesStocks: GetCompaniesStocks[F]
   = wire[GetCompaniesStocksImpl[F]]
@@ -63,5 +66,4 @@ class FinanceModuleImpl[F[_]](
 
   lazy val refreshAllFinanceRepositories: RefreshAllFinanceRepositories[F]
   = wire[RefreshAllFinanceRepositoriesImpl[F]]
-
 }

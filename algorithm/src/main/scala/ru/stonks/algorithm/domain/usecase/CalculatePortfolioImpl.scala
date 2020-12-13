@@ -2,7 +2,7 @@ package ru.stonks.algorithm.domain.usecase
 
 import cats.data.EitherT
 import cats.effect.Sync
-import ru.stonks.algorithm.domain.entity._
+import ru.stonks.algorithm.core.domain.usecase.CalculatePortfolio
 import ru.stonks.entity.algorithm._
 import ru.stonks.entity.finance._
 import ru.stonks.finance.core.domain.usecase._
@@ -130,8 +130,9 @@ class CalculatePortfolioImpl[F[_] : Sync](
       portfolioStocks
     }
 
+    val remainingSumAfterSharedPortfolio = dollarsSum - sharedPortfolioStocks.map(_.sum).sum
     val (zeroStocks, otherStocks)        = sharedPortfolioStocks.partition(_.count == 0)
-    val (filledZeroStocks, remainingSum) = fillStocksByOne(zeroStocks, dollarsSum)
+    val (filledZeroStocks, remainingSum) = fillStocksByOne(zeroStocks, remainingSumAfterSharedPortfolio)
     val allStocks                        = otherStocks ::: filledZeroStocks
     val filledPortfolioStocks            = fillUntilFull(allStocks, remainingSum)
 

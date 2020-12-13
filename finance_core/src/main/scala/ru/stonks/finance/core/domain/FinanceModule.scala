@@ -4,6 +4,7 @@ import ru.stonks.finance.core.domain.usecase._
 
 trait FinanceModule[F[_]] {
   def getCompanies: GetCompanies[F]
+  def getAllNonexistentCompanies: GetAllNonexistentCompanies[F]
   def getCompaniesStocks: GetCompaniesStocks[F]
   def getCompanyMarketCapitalization: GetCompanyMarketCapitalization[F]
   def getCompaniesMarketCapitalization: GetCompaniesMarketCapitalization[F]

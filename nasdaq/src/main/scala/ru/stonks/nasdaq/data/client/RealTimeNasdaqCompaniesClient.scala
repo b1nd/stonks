@@ -39,5 +39,5 @@ class RealTimeNasdaqCompaniesClient[F[_] : Sync : ContextShift](
     client.fetchAs(request)(jsonOf[F, List[NasdaqCompanyResponse]])
 
   private def handleResponse(response: List[NasdaqCompanyResponse]) =
-    response.map(r => Company(r.symbol))
+    response.map(r => Company(r.symbol.toUpperCase))
 }
