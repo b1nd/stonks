@@ -4,7 +4,7 @@ object Dependency {
 
   object Version {
     val Scala       = "2.13.4"
-    val Enumeratum = "1.6.1"
+    val Enumeratum  = "1.6.1"
     val CatsCore    = "2.2.0"
     val CatsEffect  = "2.2.0"
     val Http4s      = "0.21.7"
